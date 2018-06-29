@@ -56,16 +56,18 @@ spec:
         - name: KONG_{{ $key | upper}}
           value: {{ $val | quote }}
         {{- end}}
-        {{- if .Values.postgresql.enabled }}
+        {{- if or (.Values.postgresql.enabled) (and (eq .Values.env.database "postgresql") (not .Values.env.pg_host)) }}
         - name: KONG_PG_HOST
           value: {{ template "kong.postgresql.fullname" . }}
+        {{- end }}
+        {{- if .Values.postgresql.enabled }}
         - name: KONG_PG_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "kong.postgresql.fullname" . }}
               key: postgres-password
         {{- end }}
-        {{- if .Values.cassandra.enabled }}
+        {{- if or (.Values.cassandra.enabled) (and (eq .Values.env.database "cassandra") (not .Values.env.cassandra_contact_points)) }}
         - name: KONG_CASSANDRA_CONTACT_POINTS
           value: {{ template "kong.cassandra.fullname" . }}
         {{- end }}
